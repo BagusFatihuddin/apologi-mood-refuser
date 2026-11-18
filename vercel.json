@@ -1,0 +1,22 @@
+{
+  "cleanUrls": true,
+  "outputDirectory": ".",
+  "rewrites": [
+    {
+      "source": "/love/:slug",
+      "destination": "/love?p=:slug"
+    },
+    {
+      "source": "/love",
+      "destination": "/love"
+    },
+    {
+      "source": "/buat",
+      "destination": "/buat"
+    },
+    {
+      "source": "/create",
+      "destination": "/buat"
+    }
+  ]
+}

@@ -1,0 +1,280 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Application: Ruang Berdamai (The Apology & Mood Defuser)
+//
+// 1. Collection: tokens
+//    Document ID: token_code (string, e.g., "LOVE-8472", 3-64 chars)
+//    Fields:
+//      - device_fingerprint: string | null (optional initially, 8-128 chars, bound on first client claim)
+//      - status: string (required, 'active' | 'used')
+//      - created_at: timestamp (required, immutable)
+//      - slug: string | null (optional, 3-100 chars, associated apology page slug)
+//
+//    Rules Summary:
+//      - Read (get): Allowed for specific token_code to validate client token.
+//      - Read (list): Denied to prevent harvesting/enumeration of active tokens.
+//      - Create: Restricted to admin / backend system.
+//      - Update: Allowed if token is unbound (device_fingerprint is null/empty) to bind device,
+//                OR if request device_fingerprint matches existing bound device_fingerprint.
+//                Must preserve immutable fields (created_at) and valid status transitions.
+//      - Delete: Denied for client SDK, admin only.
+//
+// 2. Collection: apology_pages
+//    Document ID: slug (string, e.g., "budi-dan-caca", 3-100 chars, url-safe)
+//    Fields:
+//      - slug: string (required, immutable, matches document ID)
+//      - token_code: string (required, immutable, references valid token)
+//      - device_fingerprint: string (required, immutable, owner device identifier, 8-128 chars)
+//      - partner_name: string (required, 1-100 chars)
+//      - sender_name: string (required, 1-100 chars)
+//      - whatsapp_number: string (required, 8-25 chars, valid phone number format)
+//      - letter_message: string (required, 1-5000 chars)
+//      - compensations: list (required, <= 30 items)
+//      - created_at: timestamp (required, immutable)
+//      - updated_at: timestamp (required, timestamp)
+//
+//    Rules Summary:
+//      - Read: Public (anyone visiting the shared page link can view the apology page).
+//      - Create: Allowed if client provides a valid token_code that exists in /tokens/{token_code},
+//                matches or binds device_fingerprint, and all required payload fields pass validation.
+//      - Update: Allowed only by the original creator device (device_fingerprint matches existing),
+//                preserving immutable identity fields, and passing full domain validation.
+//      - Delete: Denied for all client callers.
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default Deny: Deny all reads and writes by default at root
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Global Helper Functions
+    // ===============================================================
+
+    // Check if request is authenticated as an admin
+    function isAdmin() {
+      return request.auth != null && 
+        (request.auth.token.admin == true || 
+         request.auth.token.role == 'admin');
+    }
+
+    // Validate slug formatting: alphanumeric with hyphens/underscores, 3-100 characters
+    function isValidSlug(val) {
+      return val is string &&
+        val.size() >= 3 &&
+        val.size() <= 100 &&
+        val.matches('^[a-z0-9]+([-_][a-z0-9]+)*$');
+    }
+
+    // Validate phone number formatting (international / Indonesian format)
+    function isValidPhone(val) {
+      return val is string &&
+        val.size() >= 8 &&
+        val.size() <= 25 &&
+        val.matches('^[+]?[0-9 -]+$');
+    }
+
+    // Validate device fingerprint format
+    function isValidFingerprint(val) {
+      return val is string &&
+        val.size() >= 8 &&
+        val.size() <= 128 &&
+        val.matches('^[a-zA-Z0-9_-]+$');
+    }
+
+    // Validate token code format
+    function isValidTokenCode(val) {
+      return val is string &&
+        val.size() >= 3 &&
+        val.size() <= 64 &&
+        val.matches('^[a-zA-Z0-9_-]+$');
+    }
+
+    // ===============================================================
+    // Collection: tokens
+    // ===============================================================
+    match /tokens/{token_code} {
+
+      // Read: Direct lookup by ID permitted for client token verification.
+      // List query is strictly forbidden to prevent database token harvesting.
+      allow get: if isValidTokenCode(token_code);
+      allow list: if false;
+
+      // Create: Only admin / backend Admin SDK
+      allow create: if isAdmin() && isValidTokenData(request.resource.data);
+
+      // Update: Client device binding or admin update
+      allow update: if (isAdmin() && isValidTokenData(request.resource.data)) ||
+        (
+          isAuthorizedTokenUpdater() &&
+          isValidTokenUpdate(request.resource.data, resource.data)
+        );
+
+      // Delete: Restricted to admin
+      allow delete: if isAdmin();
+
+      // --- Helper Functions for tokens ---
+
+      function isAuthorizedTokenUpdater() {
+        let isUnbound = !('device_fingerprint' in resource.data) || 
+                        resource.data.device_fingerprint == null || 
+                        resource.data.device_fingerprint == '';
+        
+        let isSameDevice = ('device_fingerprint' in resource.data) && 
+                           resource.data.device_fingerprint != null && 
+                           request.resource.data.device_fingerprint == resource.data.device_fingerprint;
+
+        return isUnbound || isSameDevice;
+      }
+
+      function isValidTokenData(data) {
+        return data.keys().hasAll(['status', 'created_at']) &&
+          data.keys().hasOnly(['status', 'created_at', 'device_fingerprint', 'slug']) &&
+          data.status in ['active', 'used'] &&
+          data.created_at is timestamp &&
+          (!('device_fingerprint' in data) || data.device_fingerprint == null || isValidFingerprint(data.device_fingerprint)) &&
+          (!('slug' in data) || data.slug == null || isValidSlug(data.slug));
+      }
+
+      function isValidTokenUpdate(reqData, resData) {
+        return isValidTokenData(reqData) &&
+          // Client must provide a valid device_fingerprint on update
+          ('device_fingerprint' in reqData) &&
+          reqData.device_fingerprint != null &&
+          isValidFingerprint(reqData.device_fingerprint) &&
+          // created_at is immutable
+          reqData.created_at == resData.created_at &&
+          // Token status cannot transition from 'used' back to 'active'
+          (resData.status == 'used' ? reqData.status == 'used' : true) &&
+          // Bound slug cannot be changed once set
+          (('slug' in resData && resData.slug != null && resData.slug != '') ?
+            reqData.slug == resData.slug : true);
+      }
+    }
+
+    // ===============================================================
+    // Collection: apology_pages
+    // ===============================================================
+    match /apology_pages/{slug} {
+
+      // Read: Public - Anyone opening the lover's link can read this apology page
+      allow read: if isValidSlug(slug);
+
+      // Create: Client create requires valid token & schema compliance
+      allow create: if isValidSlug(slug) &&
+        request.resource.data.slug == slug &&
+        isValidApologyPage(request.resource.data) &&
+        hasValidTokenForCreation(
+          request.resource.data.token_code,
+          request.resource.data.device_fingerprint,
+          slug
+        );
+
+      // Update: Only original device owner can update page details
+      allow update: if isAuthorizedPageEditor() &&
+        isValidApologyPage(request.resource.data) &&
+        isImmutablePageDataUnchanged(request.resource.data, resource.data);
+
+      // Delete: Strictly denied for clients
+      allow delete: if isAdmin();
+
+      // --- Helper Functions for apology_pages ---
+
+      function isAuthorizedPageEditor() {
+        return isAdmin() || 
+          (request.resource.data.device_fingerprint == resource.data.device_fingerprint);
+      }
+
+      function isImmutablePageDataUnchanged(reqData, resData) {
+        return reqData.slug == resData.slug &&
+          reqData.token_code == resData.token_code &&
+          reqData.device_fingerprint == resData.device_fingerprint &&
+          reqData.created_at == resData.created_at &&
+          reqData.updated_at >= resData.updated_at;
+      }
+
+      function tokenDoc(tokenCode) {
+        return get(/databases/$(database)/documents/tokens/$(tokenCode)).data;
+      }
+
+      function tokenExists(tokenCode) {
+        return exists(/databases/$(database)/documents/tokens/$(tokenCode));
+      }
+
+      function isTokenCompatibleWithDevice(tokenCode, deviceFingerprint) {
+        let token = tokenDoc(tokenCode);
+        return !('device_fingerprint' in token) ||
+          token.device_fingerprint == null ||
+          token.device_fingerprint == '' ||
+          token.device_fingerprint == deviceFingerprint;
+      }
+
+      function isTokenCompatibleWithStatus(tokenCode, pageSlug, deviceFingerprint) {
+        let token = tokenDoc(tokenCode);
+        return token.status == 'active' ||
+          (token.status == 'used' &&
+           (('slug' in token && token.slug == pageSlug) ||
+            ('device_fingerprint' in token && token.device_fingerprint == deviceFingerprint)));
+      }
+
+      function hasValidTokenForCreation(tokenCode, deviceFingerprint, pageSlug) {
+        return isValidTokenCode(tokenCode) &&
+          tokenExists(tokenCode) &&
+          isTokenCompatibleWithDevice(tokenCode, deviceFingerprint) &&
+          isTokenCompatibleWithStatus(tokenCode, pageSlug, deviceFingerprint);
+      }
+
+      function isValidApologyPage(data) {
+        return data.keys().hasAll([
+            'slug',
+            'token_code',
+            'device_fingerprint',
+            'partner_name',
+            'sender_name',
+            'whatsapp_number',
+            'letter_message',
+            'compensations',
+            'created_at',
+            'updated_at'
+          ]) &&
+          data.keys().hasOnly([
+            'slug',
+            'token_code',
+            'device_fingerprint',
+            'partner_name',
+            'sender_name',
+            'whatsapp_number',
+            'letter_message',
+            'compensations',
+            'created_at',
+            'updated_at'
+          ]) &&
+          isValidSlug(data.slug) &&
+          isValidTokenCode(data.token_code) &&
+          isValidFingerprint(data.device_fingerprint) &&
+          data.partner_name is string &&
+          data.partner_name.size() >= 1 &&
+          data.partner_name.size() <= 100 &&
+          data.sender_name is string &&
+          data.sender_name.size() >= 1 &&
+          data.sender_name.size() <= 100 &&
+          isValidPhone(data.whatsapp_number) &&
+          data.letter_message is string &&
+          data.letter_message.size() >= 1 &&
+          data.letter_message.size() <= 5000 &&
+          data.compensations is list &&
+          data.compensations.size() <= 30 &&
+          data.created_at is timestamp &&
+          data.updated_at is timestamp;
+      }
+    }
+  }
+}

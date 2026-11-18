@@ -1,0 +1,33 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.*",
+      "**/node_modules/**",
+      "generate-token.js",
+      "server.js",
+      "pnpm-lock.yaml",
+      "package.json"
+    ],
+    "cleanUrls": true,
+    "rewrites": [
+      {
+        "source": "/love/**",
+        "destination": "/love.html"
+      },
+      {
+        "source": "/buat",
+        "destination": "/buat.html"
+      },
+      {
+        "source": "/create",
+        "destination": "/buat.html"
+      }
+    ]
+  }
+}

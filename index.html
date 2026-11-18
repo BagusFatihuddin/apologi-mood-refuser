@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bubu & Dudu: Ruang Berdamai</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bubu: {
+              cream: '#FFFDF9',
+              blush: '#FFF0F3',
+              pink: '#FF5E86',
+              softpink: '#FF85A2',
+              lightpink: '#FFE4EC',
+              brown: '#4A3528',
+              softbrown: '#7A5F4D',
+              mint: '#48BB95',
+              yellow: '#FBBF24'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom Stylesheets -->
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-pink-300 selection:text-pink-900">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 cozy-glass border-b border-pink-100/80 px-4 py-3">
+    <div class="max-w-xl mx-auto flex items-center justify-between">
+      
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-2xl bg-pink-100 border border-pink-200 flex items-center justify-center text-pink-500 shadow-sm flex-shrink-0">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="text-[10px] tracking-wider uppercase font-extrabold text-pink-500 font-heading">Ruang Berdamai</div>
+          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-stone-800 flex items-center gap-1.5 font-heading">
+            Bubu & Dudu <span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 font-bold">Love Edition</span>
+          </h1>
+        </div>
+      </div>
+      
+      <!-- Utility Action Buttons -->
+      <div class="flex items-center gap-2">
+        <!-- Buat Halaman Damai Button -->
+        <a href="/buat" class="px-3 py-1.5 rounded-full bg-pink-500 hover:bg-pink-600 text-xs font-bold text-white flex items-center gap-1.5 transition-all shadow-sm">
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span class="font-heading">Buat Halamanmu</span>
+        </a>
+
+        <!-- Re-read Letter Button -->
+        <button id="btnReadLetter" type="button" class="px-3 py-1.5 rounded-full bg-pink-50 hover:bg-pink-100 border border-pink-200 text-xs font-bold text-pink-600 flex items-center gap-1.5 transition-all shadow-sm">
+          <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+            <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span class="hidden sm:inline">Surat Dudu</span>
+        </button>
+
+        <!-- Sound Toggle -->
+        <button id="soundToggleBtn" type="button" class="px-2.5 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-xs font-bold text-stone-600 flex items-center gap-1 transition-all">
+          <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+            <path d="M15.54 8.46a5 5 0 010 7.07"/>
+          </svg>
+          <span id="soundIcon" class="hidden sm:inline">Suara</span>
+        </button>
+
+        <!-- Settings Button -->
+        <button id="settingsBtn" type="button" class="p-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 transition-all" title="Pengaturan">
+          <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-1 w-full max-w-xl mx-auto p-4 sm:p-5 space-y-5">
+
+    <!-- PROMO CREATOR BANNER -->
+    <a href="/buat" class="block p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-pink-100/90 via-rose-50 to-pink-100/70 border border-pink-200/90 shadow-xs hover:shadow-md transition-all group">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <img src="/assets/bubu-courier.gif" alt="Bubu" class="w-10 h-10 object-contain rounded-xl bg-white/80 p-1 flex-shrink-0 shadow-xs">
+          <div>
+            <div class="text-[10px] font-extrabold uppercase text-pink-600 font-heading tracking-wider">Fitur Eksklusif Pasangan</div>
+            <div class="text-xs sm:text-sm font-bold text-stone-800 font-heading group-hover:text-pink-600 transition-colors">
+              Buat Ruang Berdamai Khusus Pacar Kamu 💕
+            </div>
+            <div class="text-[10px] text-stone-500">Kustomisasi nama, surat cinta, denda jajan & dapatkan QR Code!</div>
+          </div>
+        </div>
+        <span class="px-3 py-1.5 rounded-xl bg-pink-500 text-white font-bold text-[11px] group-hover:bg-pink-600 transition-colors shadow-xs flex-shrink-0 font-heading">
+          Buat ➜
+        </span>
+      </div>
+    </a>
+
+    <!-- VIEW 1: SIMULATION & DEFUSER VIEW -->
+    <div id="mainAppView" class="space-y-5">
+
+      <!-- SECTION 1: RADAR TINGKAT NGAMBEK BUBU -->
+      <section class="cozy-card p-5 sm:p-6 text-center space-y-4">
+        
+        <!-- Header Step Tag -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-pink-100 pb-3">
+          <div class="text-left">
+            <span class="inline-block px-3 py-0.5 rounded-full bg-pink-100 text-pink-600 font-extrabold text-[10px] tracking-wider uppercase font-heading">
+              Langkah 01
+            </span>
+            <h2 class="text-lg sm:text-xl font-bold font-heading text-stone-800 mt-1">
+              Seberapa Marah Bubu Hari Ini?
+            </h2>
+          </div>
+          <div id="moodBadge" class="self-start sm:self-auto px-3.5 py-1.5 rounded-full text-xs font-bold font-heading bg-pink-100 text-pink-600 border border-pink-200">
+            Level 01 • Cemberut Dikit
+          </div>
+        </div>
+
+        <!-- BUBU DUDU GIF DISPLAY CONTAINER -->
+        <div class="flex justify-center my-2">
+          <div id="memeContainer" class="w-64 sm:w-72 h-56 rounded-3xl overflow-hidden border-3 border-pink-200 bg-pink-50/50 shadow-inner flex items-center justify-center relative transition-all duration-300">
+            <img id="catMemeDisplay" src="/assets/bubu-1-pout.gif" alt="Bubu dan Dudu" class="w-full h-full object-cover select-none pointer-events-none">
+            
+            <!-- Value Pill -->
+            <div class="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-pink-200 text-pink-600 font-extrabold text-xs shadow-sm font-heading">
+              Ngambek: <span id="sliderValueDisplay" class="text-pink-600">1%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Narrative Mood Description -->
+        <div class="space-y-1 px-2">
+          <h3 id="moodTitle" class="text-base sm:text-lg font-bold text-stone-800 font-heading">Bubu Cemberut Manja</h3>
+          <p id="moodSubtext" class="text-xs text-stone-500 max-w-sm mx-auto">Bete dikit doang, disodorin boba atau es krim langsung senyum lagi.</p>
+          <div class="mt-2 p-2.5 rounded-2xl bg-pink-50/80 border border-pink-100 text-xs italic text-pink-700 font-medium">
+            <span id="moodQuote">"Hmm... Bubu gak apa-apa kok (tapi Dudu jangan cuek ya!)."</span>
+          </div>
+        </div>
+
+        <!-- THE INTERACTIVE SLIDER -->
+        <div class="space-y-2 pt-2 text-left">
+          <div class="flex justify-between items-center text-[11px] font-bold text-stone-400">
+            <span>1% (Cemberut Dikit)</span>
+            <span class="text-pink-500 font-extrabold">Geser Tuas Bubu ➔</span>
+            <span>1000% (Mega Tantrum)</span>
+          </div>
+
+          <div class="py-1">
+            <input 
+              id="moodSlider" 
+              type="range" 
+              min="1" 
+              max="1000" 
+              value="1" 
+              class="w-full h-3.5 bg-pink-100 rounded-full appearance-none cursor-pointer focus:outline-none"
+            >
+          </div>
+          <p class="text-[11px] text-center text-stone-400 font-medium">
+            Tunjukkan ke Dudu seberapa besarnya emosi kamu sekarang ya Bubu!
+          </p>
+        </div>
+
+      </section>
+
+      <!-- SECTION 2: MENU DENDA KOMPENSASI (PILIHAN JAJAN & SERVIS) -->
+      <section class="cozy-card p-5 sm:p-6 space-y-4">
+        
+        <div class="border-b border-pink-100 pb-3">
+          <span class="inline-block px-3 py-0.5 rounded-full bg-pink-100 text-pink-600 font-extrabold text-[10px] tracking-wider uppercase font-heading">
+            Langkah 02
+          </span>
+          <h2 class="text-lg sm:text-xl font-bold font-heading text-stone-800 mt-1">
+            Menu Denda Jajan & Servis Buat Dudu
+          </h2>
+          <p class="text-xs text-stone-500 mt-0.5">
+            Centang apa saja yang wajib Dudu lunasin sebagai syarat damai resmi ya!
+          </p>
+        </div>
+
+        <!-- Sincerity / Treaty Bar -->
+        <div class="space-y-1.5 p-3 rounded-2xl bg-pink-50/60 border border-pink-100">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-stone-700">Indeks Ketulusan Dudu:</span>
+            <span id="sincerityPercent" class="font-extrabold text-pink-600 font-heading">0%</span>
+          </div>
+          <div class="w-full h-3 bg-white rounded-full overflow-hidden p-0.5 border border-pink-200">
+            <div id="sincerityBar" class="h-full bg-slate-300 rounded-full transition-all duration-500 w-0"></div>
+          </div>
+          <div id="sincerityStatus" class="text-[11px] text-stone-500 font-medium italic">
+            Belum ada jajan/kompensasi terpilih untuk Bubu...
+          </div>
+        </div>
+
+        <!-- Checkbox Options with Bespoke Clean SVG Icons -->
+        <div id="compensationList" class="grid grid-cols-1 gap-2.5">
+          
+          <!-- Item 1: Seblak / Noodle Bowl -->
+          <label class="check-card flex items-center gap-3.5 p-3.5 rounded-2xl border border-pink-100 bg-white hover:bg-pink-50/40 cursor-pointer transition-all">
+            <input type="checkbox" class="h-5 w-5 rounded-lg border-pink-300 text-pink-500 focus:ring-0 focus:ring-offset-0">
+            <div class="icon-badge bg-rose-50 text-rose-500 border border-rose-100">
+              <!-- Noodle Bowl SVG -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12h16c0 4.42-3.58 8-8 8s-8-3.58-8-8z"/>
+                <path d="M4 12c0-2 2-2 2-4"/>
+                <path d="M9 12c0-3 2-3 2-6"/>
+                <path d="M14 12c0-2 2-2 2-4"/>
+                <path d="M19 12c0-3 2-3 2-6"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="font-bold text-stone-800 text-sm comp-title">Traktir Seblak Pedas + Es Teh Manis Jumbo</div>
+              <div class="text-[11px] text-stone-400 mt-0.5">Sensasi pedas gurih buat ngilangin rasa kesel Bubu.</div>
+            </div>
+          </label>
+
+          <!-- Item 2: Boba / Matcha -->
+          <label class="check-card flex items-center gap-3.5 p-3.5 rounded-2xl border border-pink-100 bg-white hover:bg-pink-50/40 cursor-pointer transition-all">
+            <input type="checkbox" class="h-5 w-5 rounded-lg border-pink-300 text-pink-500 focus:ring-0 focus:ring-offset-0">
+            <div class="icon-badge bg-emerald-50 text-emerald-500 border border-emerald-100">
+              <!-- Boba Cup SVG -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 6l1 14a2 2 0 002 2h4a2 2 0 002-2l1-14"/>
+                <path d="M6 6h12"/>
+                <path d="M12 2l-2 4"/>
+                <circle cx="10" cy="15" r="1" fill="currentColor"/>
+                <circle cx="14" cy="16" r="1" fill="currentColor"/>
+                <circle cx="12" cy="18" r="1" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="font-bold text-stone-800 text-sm comp-title">Jajanin Es Krim Matcha / Kopi Susu Favorit</div>
+              <div class="text-[11px] text-stone-400 mt-0.5">Suntikan manis penstabil mood Bubu tanpa debat kalori.</div>
+            </div>
+          </label>
+
+          <!-- Item 3: Dengerin Curhat -->
+          <label class="check-card flex items-center gap-3.5 p-3.5 rounded-2xl border border-pink-100 bg-white hover:bg-pink-50/40 cursor-pointer transition-all">
+            <input type="checkbox" class="h-5 w-5 rounded-lg border-pink-300 text-pink-500 focus:ring-0 focus:ring-offset-0">
+            <div class="icon-badge bg-purple-50 text-purple-500 border border-purple-100">
+              <!-- Heart Chat SVG -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="font-bold text-stone-800 text-sm comp-title">Dengerin Curhat Tanpa Motong & Tanpa Solusi Sok Tau</div>
+              <div class="text-[11px] text-stone-400 mt-0.5">Telinga Dudu standby 100%, mulut silent mode total.</div>
+            </div>
+          </label>
+
+          <!-- Item 4: Bebas Request 24 Jam -->
+          <label class="check-card flex items-center gap-3.5 p-3.5 rounded-2xl border border-pink-100 bg-white hover:bg-pink-50/40 cursor-pointer transition-all">
+            <input type="checkbox" class="h-5 w-5 rounded-lg border-pink-300 text-pink-500 focus:ring-0 focus:ring-offset-0">
+            <div class="icon-badge bg-amber-50 text-amber-500 border border-amber-100">
+              <!-- Princess Tiara / Crown SVG -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 18h14M3 9l4 4 5-7 5 7 4-4v9H3V9z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="font-bold text-stone-800 text-sm comp-title">Bebas Request Apa Aja 24 Jam (Dudu Siap Jadi Babu)</div>
+              <div class="text-[11px] text-stone-400 mt-0.5">Siap anter jemput, ambilin jajan, dan nurut apa kata Bubu.</div>
+            </div>
+          </label>
+
+          <!-- Item 5: Ngaku Salah 100% -->
+          <label class="check-card flex items-center gap-3.5 p-3.5 rounded-2xl border border-pink-100 bg-white hover:bg-pink-50/40 cursor-pointer transition-all">
+            <input type="checkbox" class="h-5 w-5 rounded-lg border-pink-300 text-pink-500 focus:ring-0 focus:ring-offset-0">
+            <div class="icon-badge bg-pink-50 text-pink-500 border border-pink-100">
+              <!-- Pinky Promise / Heart Lock SVG -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="font-bold text-stone-800 text-sm comp-title">Dudu Ngaku Salah 100% Tanpa Kata 'Tapi Kan...'</div>
+              <div class="text-[11px] text-stone-400 mt-0.5">Pengakuan bersalah mutlak tanpa pembelaan diri.</div>
+            </div>
+          </label>
+
+          <!-- Item 6: Pijit Bahu -->
+          <label class="check-card flex items-center gap-3.5 p-3.5 rounded-2xl border border-pink-100 bg-white hover:bg-pink-50/40 cursor-pointer transition-all">
+            <input type="checkbox" class="h-5 w-5 rounded-lg border-pink-300 text-pink-500 focus:ring-0 focus:ring-offset-0">
+            <div class="icon-badge bg-orange-50 text-orange-500 border border-orange-100">
+              <!-- Massage Hands SVG -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="font-bold text-stone-800 text-sm comp-title">Pijitin Bahu & Punggung Bubu Sampai Pegelnya Hilang</div>
+              <div class="text-[11px] text-stone-400 mt-0.5">Relaksasi gratis buat pundak Bubu yang capek seharian.</div>
+            </div>
+          </label>
+
+        </div>
+
+        <!-- Custom Request Input -->
+        <div class="space-y-2 pt-2">
+          <div id="customDemandsContainer" class="space-y-2"></div>
+
+          <div class="flex gap-2">
+            <input 
+              id="customDemandInput" 
+              type="text" 
+              placeholder="Bubu mau request jajan/hadiah lain? Ketik di sini..." 
+              class="flex-1 px-4 py-2.5 rounded-2xl bg-pink-50/50 border border-pink-200 text-xs sm:text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:border-pink-400 transition"
+            >
+            <button 
+              id="addCustomBtn" 
+              type="button" 
+              class="px-4 py-2.5 rounded-2xl bg-pink-500 hover:bg-pink-600 text-white font-extrabold text-xs uppercase tracking-wider transition shadow-sm font-heading"
+            >
+              + Tambah
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- SECTION 3: KEPUTUSAN CINTA (MASIH MARAH VS UDAH BAIKAN) -->
+      <section class="cozy-card p-6 sm:p-7 text-center space-y-4">
+        
+        <div>
+          <span class="inline-block px-3 py-0.5 rounded-full bg-pink-100 text-pink-600 font-extrabold text-[10px] tracking-wider uppercase font-heading">
+            Langkah 03
+          </span>
+          <h2 class="text-xl sm:text-2xl font-bold font-heading text-stone-800 mt-1">
+            Apakah Bubu Mau Maafin Dudu?
+          </h2>
+          <p class="text-xs text-stone-500 max-w-sm mx-auto mt-0.5">
+            Tentukan vonis buat Dudu sekarang ya Bubu manis!
+          </p>
+        </div>
+
+        <!-- Refusal Counter Alert -->
+        <div id="refusalCounterText" class="hidden text-xs font-bold text-pink-700 p-2.5 rounded-2xl bg-pink-100/70 border border-pink-200">
+          Bubu sudah menolak 1x!
+        </div>
+
+        <!-- Action Buttons -->
+        <div id="decisionActions" class="flex flex-col sm:flex-row items-center justify-center gap-3.5 py-2 min-h-[110px] relative">
+          <!-- Button Masih Marah -->
+          <button 
+            id="btnStillMad" 
+            type="button" 
+            class="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-stone-100 hover:bg-pink-100 text-stone-600 border border-stone-200 font-bold text-sm shadow-sm transition-all duration-200 btn-dodge active:scale-95 font-heading"
+          >
+            Masih Marah Dudu
+          </button>
+
+          <!-- Button Udah Baikan -->
+          <button 
+            id="btnForgive" 
+            type="button" 
+            class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white font-extrabold text-base shadow-lg shadow-pink-300 transition-all duration-300 transform hover:scale-105 active:scale-95 font-heading"
+          >
+            Udah Baikan Dong!
+          </button>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- VIEW 2: VOUCHER DAMAI (VICTORY VIEW) -->
+    <div id="victoryView" class="hidden space-y-5">
+      
+      <div class="cozy-card p-6 sm:p-7 text-center space-y-4">
+        
+        <div class="text-pink-500 font-extrabold text-xs tracking-wider uppercase font-heading">
+          Yeeey! Akhirnya Baikan!
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold font-heading text-stone-800">
+          BUBU UDAH GAK NGAMBEK LAGI!
+        </h2>
+        <p class="text-xs sm:text-sm text-stone-500">
+          Dudu janji bakal lunasin semua jajan dan jadi pacar yang lebih baik lagi!
+        </p>
+
+        <!-- Bubu Dudu Hug GIF -->
+        <div class="flex justify-center my-3">
+          <div class="w-64 h-56 rounded-3xl overflow-hidden border-3 border-pink-200 shadow-md bg-pink-50">
+            <img src="/assets/bubu-hug.gif" alt="Bubu dan Dudu Pelukan" class="w-full h-full object-cover">
+          </div>
+        </div>
+
+        <!-- PHOTOCARD / VOUCHER BERDAMAI -->
+        <div class="photocard-voucher p-6 text-left space-y-3.5 my-4 max-w-md mx-auto">
+          
+          <div class="text-center border-b border-pink-100 pb-2.5">
+            <div class="text-[10px] font-extrabold text-pink-500 tracking-wider uppercase font-heading">Voucher Resmi Berdamai</div>
+            <h3 class="text-base sm:text-lg font-bold font-heading text-stone-800">BUBU & DUDU LOVE TREATY</h3>
+            <div class="text-[10px] text-stone-400">No: LOVE/BUBU-DUDU/2026/001</div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5 text-xs border-b border-pink-100 pb-2.5">
+            <div>
+              <span class="text-stone-400 block text-[10px]">WAKTU RESMI:</span>
+              <span id="certDate" class="text-stone-700 font-bold">-</span>
+            </div>
+            <div>
+              <span class="text-stone-400 block text-[10px]">TINGKAT MARAH AWAL:</span>
+              <span id="certLevel" class="text-pink-600 font-extrabold font-heading">-</span>
+            </div>
+            <div class="col-span-2">
+              <span class="text-stone-400 block text-[10px]">YANG MEMAAFKAN:</span>
+              <span id="certPartner" class="text-pink-600 font-extrabold font-heading text-sm">Bubu Tersayang 🌸</span>
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="text-[11px] font-extrabold text-stone-600 uppercase font-heading">
+              Denda Jajan yang Wajib Ditunaikan Dudu:
+            </div>
+            <ul id="certClauses" class="space-y-1 pl-1 max-h-40 overflow-y-auto">
+              <!-- Injected by app.js -->
+            </ul>
+          </div>
+
+          <div class="pt-2 border-t border-pink-100 flex items-center justify-between text-[11px] text-stone-400 font-medium">
+            <span>Garansi Cinta: 100% Selamanya</span>
+            <span class="text-emerald-500 font-bold">STATUS: SAH BAIKAN</span>
+          </div>
+
+        </div>
+
+        <!-- Action Call to WhatsApp -->
+        <div class="space-y-2.5 max-w-md mx-auto pt-1">
+          <a 
+            id="btnClaimWa" 
+            href="#" 
+            target="_blank" 
+            class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-emerald-200 flex items-center justify-center gap-2 transform hover:scale-[1.02] active:scale-95 transition-all font-heading"
+          >
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+            </svg>
+            <span>KLAIM JAJAN KE WHATSAPP DUDU</span>
+          </a>
+
+          <div class="flex items-center gap-2">
+            <button 
+              id="btnCopyCert" 
+              type="button" 
+              class="flex-1 py-2.5 px-4 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-bold text-stone-600 transition"
+            >
+              Salin Teks Perjanjian
+            </button>
+            <button 
+              id="btnRestart" 
+              type="button" 
+              class="py-2.5 px-4 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-bold text-stone-500 hover:text-stone-700 transition"
+            >
+              Simulasi Ulang
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- WELCOME INTRO MODAL: SURAT CINTA BUBU & DUDU -->
+  <div id="welcomeIntroModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-fadeIn overflow-y-auto">
+    
+    <!-- PHASE 1: AMPLOP TERSEGEL PASTEL -->
+    <div id="introPhaseEnvelope" class="max-w-md w-full space-y-3.5 my-auto">
+      
+      <!-- Speech Bubble Dudu Kurir -->
+      <div class="bg-white rounded-3xl p-4 text-center border border-pink-200 shadow-xl relative">
+        <div class="inline-block px-3 py-0.5 rounded-full bg-pink-100 text-pink-600 text-[10px] font-extrabold uppercase font-heading mb-1">
+          Surat Darurat dari Dudu
+        </div>
+        <p class="text-xs sm:text-sm text-stone-600 leading-relaxed font-semibold">
+          "Permisi <strong class="text-pink-600 font-bold" id="introPartnerGreeting">Bubu Tersayang 🌸</strong>!<br>
+          Dudu nyesel banget udah bikin Bubu kesel hari ini... Dudu gak berani natap Bubu langsung, jadi Dudu titip surat damai ini buat Bubu ya?"
+        </p>
+      </div>
+
+      <!-- Bubu Dudu Avatar -->
+      <div class="flex justify-center -my-2 relative z-10">
+        <div class="w-24 h-24 rounded-full overflow-hidden border-3 border-pink-300 shadow-lg bg-white">
+          <img src="/assets/bubu-courier.gif" alt="Bubu dan Dudu" class="w-full h-full object-cover">
+        </div>
+      </div>
+
+      <!-- Pastel Digital Envelope -->
+      <div class="pastel-envelope rounded-3xl p-6 text-center cursor-pointer group" id="btnOpenEnvelope">
+        <div class="flex items-center justify-between text-[10px] font-extrabold text-pink-500 uppercase tracking-wider mb-2 font-heading">
+          <span>SURAT KHUSUS</span>
+          <span>BUAT BUBU</span>
+        </div>
+
+        <div class="py-3 flex flex-col items-center justify-center">
+          <div class="wax-seal-pastel rounded-full flex items-center justify-center text-white text-xl shadow-md cursor-pointer">
+            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </div>
+          <div class="mt-2 text-[11px] text-pink-600 font-bold tracking-wider font-heading uppercase">
+            Buka Surat Cinta
+          </div>
+        </div>
+
+        <div class="space-y-0.5 mt-1">
+          <div class="text-base sm:text-lg font-bold font-heading text-stone-800">
+            Surat Khusus untuk: <span class="text-pink-600" id="envelopeRecipientName">Bubu Tersayang 🌸</span>
+          </div>
+          <p class="text-xs text-stone-400">
+            Ketuk amplop di atas buat baca permohonan maaf Dudu
+          </p>
+        </div>
+
+        <button type="button" class="mt-4 w-full py-3 px-5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-md transition font-heading">
+          Buka Amplop Surat Dudu
+        </button>
+      </div>
+
+    </div>
+
+    <!-- PHASE 2: SURAT TERBUKA & PANDUAN MAIN -->
+    <div id="introPhaseLetter" class="letter-stationery max-w-lg w-full p-6 sm:p-7 space-y-4 my-auto hidden">
+      
+      <div class="text-center border-b border-pink-100 pb-2.5">
+        <div class="text-[10px] font-extrabold text-pink-500 uppercase tracking-wider font-heading">Surat Permohonan Maaf Dudu</div>
+        <h3 class="text-xl font-bold font-heading text-stone-800 mt-0.5">DARI DUDU YANG LAGI KHILAF</h3>
+      </div>
+
+      <div class="p-3.5 rounded-2xl bg-pink-50/70 border border-pink-100 text-xs sm:text-sm text-stone-700 leading-relaxed">
+        "Hai Bubu sayang... Dudu tau Dudu salah dan bikin Bubu kesel hari ini. Dudu minta maaf yaa... Dudu gak mau Bubu sedih terus. Dudu bikinin <strong>'Ruang Berdamai'</strong> ini khusus buat Bubu tersayang."
+      </div>
+
+      <div class="space-y-2.5">
+        <div class="text-xs font-extrabold text-pink-600 uppercase font-heading tracking-wide">
+          Panduan Menghukum Dudu:
+        </div>
+
+        <div class="grid grid-cols-1 gap-2 text-xs">
+          <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-white border border-pink-100 text-stone-700 shadow-sm">
+            <span class="w-5 h-5 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-[10px] flex-shrink-0">1</span>
+            <div>
+              <strong class="text-stone-800 font-heading block">Atur Level Ngambek Bubu</strong>
+              Geser slider sesuai seberapa emosi Bubu sekarang (dari cemberut dikit sampai mega tantrum!).
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-white border border-pink-100 text-stone-700 shadow-sm">
+            <span class="w-5 h-5 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-[10px] flex-shrink-0">2</span>
+            <div>
+              <strong class="text-stone-800 font-heading block">Pilih Denda Jajan & Servis</strong>
+              Centang seblak, matcha, pijit, jadi babu 24 jam, atau ketik request jajan lain.
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-white border border-pink-100 text-stone-700 shadow-sm">
+            <span class="w-5 h-5 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-[10px] flex-shrink-0">3</span>
+            <div>
+              <strong class="text-stone-800 font-heading block">Tentukan Vonis Maaf</strong>
+              Tentukan di tombol akhir, apakah Dudu dimaafin atau harus sujud minta ampun berkali-kali!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-[11px] text-center text-stone-400 italic">
+        Silakan hukum Dudu sepuasnya yaa Bubu manis...
+      </p>
+
+      <button 
+        id="btnEnterDashboard" 
+        type="button" 
+        class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white font-extrabold text-sm sm:text-base shadow-md transition font-heading"
+      >
+        BUKA RUANG BERDAMAI SEKARANG!
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- APOLOGY MODAL (DUDU SORRY / SUJUD) -->
+  <div id="apologyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm hidden animate-fadeIn">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center border-2 border-pink-200 shadow-2xl space-y-3.5">
+      
+      <div class="w-full h-44 rounded-2xl overflow-hidden border border-pink-100 bg-pink-50 flex items-center justify-center shadow-inner">
+        <img id="modalMemeImg" src="/assets/dudu-sorry.gif" alt="Dudu Minta Maaf" class="w-full h-full object-cover">
+      </div>
+
+      <div class="space-y-1">
+        <h3 id="modalTitle" class="text-lg font-bold font-heading text-pink-600">DUDU MINTA MAAF YA BUBU... 🥺💐</h3>
+        <p id="modalText" class="text-xs text-stone-600 leading-relaxed">
+          Dudu bersujud bawa bunga buat Bubu tersayang. Dudu bener-bener khilaf...
+        </p>
+      </div>
+
+      <button 
+        id="modalActionBtn" 
+        type="button" 
+        class="w-full py-2.5 px-4 rounded-2xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs uppercase tracking-wider shadow-md transition font-heading"
+      >
+        Yaudah, Bubu dengerin dulu alasannya...
+      </button>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-left border border-pink-200 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-pink-100 pb-3">
+        <h3 class="font-bold text-stone-800 text-base font-heading">
+          Pengaturan Kontak WhatsApp
+        </h3>
+        <button id="closeSettingsBtn" type="button" class="text-stone-400 hover:text-stone-700 text-sm font-bold p-1">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-stone-600 font-bold mb-1">Panggilan Pacar (Bubu):</label>
+          <input 
+            id="inputPartnerName" 
+            type="text" 
+            value="Bubu Tersayang 🌸" 
+            class="w-full px-3 py-2 rounded-xl bg-pink-50/50 border border-pink-200 text-stone-800 focus:outline-none focus:border-pink-400 font-semibold"
+          >
+        </div>
+        <div>
+          <label class="block text-stone-600 font-bold mb-1">Nomor WhatsApp Kamu (Dudu):</label>
+          <input 
+            id="inputWaNumber" 
+            type="tel" 
+            placeholder="6281234567890" 
+            class="w-full px-3 py-2 rounded-xl bg-pink-50/50 border border-pink-200 text-stone-800 focus:outline-none focus:border-pink-400 font-bold"
+          >
+          <span class="text-[10px] text-stone-400 mt-0.5 block">Awali dengan 62 tanpa spasi atau strip.</span>
+        </div>
+      </div>
+
+      <button 
+        id="saveSettingsBtn" 
+        type="button" 
+        class="w-full py-2.5 px-4 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs uppercase tracking-wider transition shadow-md font-heading"
+      >
+        Simpan Pengaturan
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center py-4 text-[11px] text-stone-400 border-t border-pink-100/60 mt-6">
+    Dibuat dengan cinta untuk Bubu & Dudu.
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/bubu.js"></script>
+</body>
+</html>

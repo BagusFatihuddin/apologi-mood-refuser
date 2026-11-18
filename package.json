@@ -1,0 +1,24 @@
+{
+  "name": "mesin-penjinak-ngambek",
+  "version": "2.4.0",
+  "description": "The Apology & Mood Defuser - Alat Interaktif Pencair Tensi Pasangan",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "apology",
+    "mood-defuser",
+    "bucin",
+    "meme",
+    "interactive"
+  ],
+  "author": "Antigravity Team",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^65.16.0"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.1"
+  }
+}
