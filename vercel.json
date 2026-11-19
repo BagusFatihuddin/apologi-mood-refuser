@@ -7,32 +7,12 @@
       "destination": "/assets/:match*"
     },
     {
-      "source": "/love/assets/:match*",
-      "destination": "/assets/:match*"
-    },
-    {
-      "source": "/love/style.css",
-      "destination": "/style.css"
-    },
-    {
-      "source": "/love/love.js",
-      "destination": "/love.js"
-    },
-    {
       "source": "/love/:slug",
-      "destination": "/love.html"
-    },
-    {
-      "source": "/love",
-      "destination": "/love.html"
-    },
-    {
-      "source": "/buat",
-      "destination": "/buat.html"
+      "destination": "/love"
     },
     {
       "source": "/create",
-      "destination": "/buat.html"
+      "destination": "/buat"
     }
   ]
 }
