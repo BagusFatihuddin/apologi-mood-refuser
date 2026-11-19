@@ -3,6 +3,22 @@
   "outputDirectory": "public",
   "rewrites": [
     {
+      "source": "/assets/:match*",
+      "destination": "/assets/:match*"
+    },
+    {
+      "source": "/love/assets/:match*",
+      "destination": "/assets/:match*"
+    },
+    {
+      "source": "/love/style.css",
+      "destination": "/style.css"
+    },
+    {
+      "source": "/love/love.js",
+      "destination": "/love.js"
+    },
+    {
       "source": "/love/:slug",
       "destination": "/love.html"
     },

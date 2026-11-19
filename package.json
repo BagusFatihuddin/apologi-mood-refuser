@@ -2,7 +2,6 @@
   "name": "mesin-penjinak-ngambek",
   "version": "2.4.0",
   "description": "The Apology & Mood Defuser - Alat Interaktif Pencair Tensi Pasangan",
-  "main": "server.js",
   "scripts": {
     "build": "node build.js",
     "start": "node server.js",

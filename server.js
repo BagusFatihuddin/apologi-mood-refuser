@@ -20,8 +20,14 @@ const MIME_TYPES = {
 const server = http.createServer((req, res) => {
   let reqUrl = req.url.split('?')[0];
 
-  // 1. Direct file check
+  // 1. Direct file check (check root or public folder)
   let targetPath = path.join(__dirname, reqUrl);
+  if (!fs.existsSync(targetPath) || !fs.statSync(targetPath).isFile()) {
+    const publicCandidate = path.join(__dirname, 'public', reqUrl);
+    if (fs.existsSync(publicCandidate) && fs.statSync(publicCandidate).isFile()) {
+      targetPath = publicCandidate;
+    }
+  }
 
   // 2. Relative resolution fallback (e.g. /love/style.css -> /style.css, /love/assets/... -> /assets/...)
   const isDirectFile = fs.existsSync(targetPath) && fs.statSync(targetPath).isFile();
