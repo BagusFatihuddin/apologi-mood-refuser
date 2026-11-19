@@ -405,6 +405,18 @@ function grantAccess(tokenCode, msg) {
   isTokenBoundToUs = true;
   localStorage.setItem('last_active_token', tokenCode);
 
+  // Update Auth Status Badge
+  const deviceBadge = document.getElementById('deviceBadge');
+  const deviceIndicator = document.getElementById('deviceIndicator');
+  const deviceSnippet = document.getElementById('deviceSnippet');
+  if (deviceBadge && deviceSnippet) {
+    deviceBadge.className = 'flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-emerald-700 shadow-xs';
+    if (deviceIndicator) {
+      deviceIndicator.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+    }
+    deviceSnippet.textContent = `Akses VIP Aktif ✨ (${tokenCode})`;
+  }
+
   // HIDE TOKEN GATEKEEPER & REVEAL FORM
   tokenGateSection.classList.add('hidden');
   creatorForm.classList.remove('hidden');
