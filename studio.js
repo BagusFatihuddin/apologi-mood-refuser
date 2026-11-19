@@ -278,7 +278,9 @@ function updateAutoSlug() {
   }
 
   const origin = window.location.origin;
-  slugPreviewText.textContent = `${origin}/love/${currentSlug}`;
+  if (slugPreviewText) {
+    slugPreviewText.textContent = `${origin}/love/${currentSlug}`;
+  }
 }
 
 function renderInitialTreats() {

@@ -675,13 +675,23 @@ function initEvents() {
   btnForgive.addEventListener('click', handleForgiveClick);
 
   // Intro Envelope & Letter Interactions
+  function openEnvelope() {
+    sounds.init();
+    sounds.playPaper();
+    sounds.playChime();
+    introPhaseEnvelope.classList.add('hidden');
+    introPhaseLetter.classList.remove('hidden');
+  }
+
   if (btnOpenEnvelope) {
-    btnOpenEnvelope.addEventListener('click', () => {
-      sounds.init();
-      sounds.playPaper();
-      sounds.playChime();
-      introPhaseEnvelope.classList.add('hidden');
-      introPhaseLetter.classList.remove('hidden');
+    btnOpenEnvelope.addEventListener('click', openEnvelope);
+  }
+
+  const envelopeBtnText = document.getElementById('envelopeBtnText');
+  if (envelopeBtnText) {
+    envelopeBtnText.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEnvelope();
     });
   }
 
