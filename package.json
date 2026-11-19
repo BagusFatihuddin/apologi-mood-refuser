@@ -3,6 +3,7 @@
   "version": "2.4.0",
   "description": "The Apology & Mood Defuser - Alat Interaktif Pencair Tensi Pasangan",
   "scripts": {
+    "build": "echo 'Build complete'",
     "start": "node server.js",
     "dev": "node server.js"
   },
