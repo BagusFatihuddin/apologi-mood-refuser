@@ -339,9 +339,17 @@ async function verifyToken(tokenCode, isAutoCheck = false) {
 
   if (!isAutoCheck) showTokenStatus('loading', 'Memverifikasi keaslian token...');
 
-  // Demo tokens support
-  if (tokenCode.startsWith('DEMO') || tokenCode === 'LOVE-TEST' || tokenCode === 'LOVE-2026') {
-    grantAccess(tokenCode, 'Token Demo Valid! Selamat mencoba.');
+  // Dedicated Active VIP Tokens & Demo support
+  const activeVipTokens = [
+    'LOVE-7788',
+    'LOVE-5521',
+    'LOVE-9934',
+    'LOVE-8472',
+    'LOVE-TEST',
+    'LOVE-2026'
+  ];
+  if (activeVipTokens.includes(tokenCode) || tokenCode.startsWith('DEMO')) {
+    grantAccess(tokenCode, `✅ Token ${tokenCode} aktif! Selamat berkarya ✨`);
     return;
   }
 
