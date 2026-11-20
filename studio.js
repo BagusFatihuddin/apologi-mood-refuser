@@ -353,6 +353,20 @@ async function verifyToken(tokenCode, isAutoCheck = false) {
     return;
   }
 
+  // Check via /api/verify-token (Serverless Function & Mayar Backend)
+  try {
+    const apiCheck = await fetch(`/api/verify-token?token=${encodeURIComponent(tokenCode)}`);
+    if (apiCheck.ok) {
+      const apiData = await apiCheck.json();
+      if (apiData.valid) {
+        grantAccess(tokenCode, `✅ ${apiData.message || 'Token Berhasil Diverifikasi!'} ✨`);
+        return;
+      }
+    }
+  } catch (apiErr) {
+    console.warn('API verification check fallback:', apiErr.message);
+  }
+
   if (!isFirebaseReady || !db) {
     grantAccess(tokenCode, `Token ${tokenCode} aktif! (Mode siaga Firestore)`);
     return;
